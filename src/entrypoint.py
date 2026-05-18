@@ -2,7 +2,6 @@ import logging
 import os
 import subprocess
 import sys
-import time
 from pathlib import Path
 from shutil import copy2
 
@@ -19,7 +18,7 @@ def main() -> None:
     mode = os.environ.get("MODE", "both")
     if mode not in ("update", "backup", "both"):
         log.error("Invalid MODE=%r — must be one of: update, backup, both", mode)
-        _sleep_forever()
+        sys.exit(1)
 
     needs_update = mode in ("update", "both")
     needs_backup = mode in ("backup", "both")
@@ -29,14 +28,14 @@ def main() -> None:
         log.error(
             "MODE=%r requires the host docker socket mounted into the container.", mode
         )
-        _sleep_forever()
+        sys.exit(1)
 
     if needs_backup and not Path("/config/rclone.conf").exists():
         log.error("rclone config not found at /config/rclone.conf")
         log.error("Run: docker exec -it docker-maintenance rclone config")
         log.error("Then: docker restart docker-maintenance")
         log.error("")
-        _sleep_forever()
+        sys.exit(1)
 
     if needs_backup and not Path("/config/backup.conf").exists():
         copy2("/etc/backup.conf.template", "/config/backup.conf")
@@ -67,11 +66,6 @@ def main() -> None:
     log.info("Scheduled: %s", schedule)
 
     os.execvp("crond", ["crond", "-f", "-l", "2"])
-
-
-def _sleep_forever() -> None:
-    while True:
-        time.sleep(3600)
 
 
 if __name__ == "__main__":
