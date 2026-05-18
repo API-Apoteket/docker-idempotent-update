@@ -127,7 +127,7 @@ def _diff(before: list[str], after: list[str]) -> str:
     before_set = set(before)
     after_set = set(after)
     lines = (
-        [f"< {l}" for l in sorted(before_set - after_set)]
-        + [f"> {l}" for l in sorted(after_set - before_set)]
+        [f"< {line}" for line in sorted(before_set - after_set)]
+        + [f"> {line}" for line in sorted(after_set - before_set)]
     )
     return "\n".join(lines)
